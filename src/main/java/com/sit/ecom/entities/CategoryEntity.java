@@ -1,8 +1,12 @@
 package com.sit.ecom.entities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity(name = "categories")
 public class CategoryEntity {
 
-
+    @Id
     private Long categoryId;
     private String categoryName;
 
