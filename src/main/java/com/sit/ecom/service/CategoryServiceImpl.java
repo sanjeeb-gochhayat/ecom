@@ -1,6 +1,8 @@
 package com.sit.ecom.service;
 
 import com.sit.ecom.entities.CategoryEntity;
+import com.sit.ecom.exceptions.APIException;
+import com.sit.ecom.exceptions.ResourceNotFoundException;
 import com.sit.ecom.repository.CategoryRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,11 +23,19 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public List<CategoryEntity> getAllCategories() {
-        return categoryRepo.findAll();
+        List<CategoryEntity> categories = categoryRepo.findAll();
+        if(categories.isEmpty()){
+            throw new APIException("No category created till now.");
+        }
+        return categories;
     }
 
     @Override
     public void createCategory(CategoryEntity category) {
+        CategoryEntity savedCategory = categoryRepo.findByCategoryName(category.getCategoryName());
+        if(savedCategory != null){
+            throw new APIException("Category with the name " + category.getCategoryName() + " already exist !!!");
+        }
         categoryRepo.save(category);
     }
 
@@ -34,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService{
 //        List<CategoryEntity> categories = categoryRepo.findAll();
 //        CategoryEntity category = categories.stream().filter(c -> c.getCategoryId().equals(categoryId)).findFirst().orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
         Optional<CategoryEntity> selectedCategoryOptional = categoryRepo.findById(categoryId);
-        CategoryEntity selectedCategory = selectedCategoryOptional.orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+        CategoryEntity selectedCategory = selectedCategoryOptional.orElseThrow(()-> new ResourceNotFoundException("Category", "categoryId", categoryId));
         categoryRepo.delete(selectedCategory);
         return "Deleted successfully";
     }
@@ -44,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService{
 //        List<CategoryEntity> categories = categoryRepo.findAll();
 //        CategoryEntity selectedCategory = categories.stream().filter(c -> c.getCategoryId().equals(categoryId)).findFirst().orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
         Optional<CategoryEntity> selectedCategoryOptional = categoryRepo.findById(categoryId);
-        CategoryEntity selectedCategory = selectedCategoryOptional.orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+        CategoryEntity selectedCategory = selectedCategoryOptional.orElseThrow(()-> new ResourceNotFoundException("Category", "categoryId", categoryId));
         selectedCategory.setCategoryName(category.getCategoryName());
         return categoryRepo.save(selectedCategory);
     }
